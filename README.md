@@ -30,7 +30,7 @@ windows
 py -3 -m venv venv
 venv/Scripts/activate
 pip install Flask
-flaskrun
+flask run
 ```
 https://msiz07-flask-docs-ja.readthedocs.io/ja/latest/installation.html
 
