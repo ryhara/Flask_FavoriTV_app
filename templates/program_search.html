@@ -1,0 +1,107 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+
+<div class="container">
+	<div class="row">
+		<div class="col-10 mx-auto">
+			{% with messages = get_flashed_messages() %}
+				{% if messages %}
+				<div id="announce" class="alert alert-danger alert-dismissible fade show mt-1">
+						<ul>
+								{% for message in messages %}
+										<li>{{ message }}</li>
+								{% endfor %}
+								</ul>
+				</div>
+				<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+				{% endif %}
+			{% endwith %}
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="container">
+	<div class="row">
+		<div class="col-9 mt-4">
+			<h1>TV Programs</h1>
+		</div>
+		<div class="d-grid gap-2 d-md-flex justify-content-md-end">
+			<a href="{{url_for('program_new')}}" class="btn btn-success w-25">New Program</a>
+		</div>
+	</div>
+	<div class="row mt-2">
+	<div class="col-2 my-3">
+			<p><strong>{{ counts }} Programs</strong></p>
+		</div>
+		<div class="col-9 ms-auto my-3">
+			<form class="d-flex" method="POST">
+				<div class="input-group me-2">
+					<select class="form-select" id="inputGroupSelect02" name="day">
+						<option value="1" selected>全</option>
+						{% for day in day_list %}
+							<option value="{{ day }}">{{ day }}</option>
+						{% endfor %}
+					</select>
+					<label class="input-group-text" for="inputGroupSelect02">曜日</label>
+				</div>
+				<input type="time" class="form-control me-2" id="timePicker" name="selectedTime" min="00:00" max="23:59">
+				<input class="form-control me-2" type="search" placeholder="Search Program" aria-label="Search" name="program_name">
+        <button class="btn btn-outline-success" type="submit">Search</button>
+      </form>
+		</div>
+	</div>
+	<div class="row">
+		<div class="table-responsive mb-2">
+			<table class="table">
+				<colgroup>
+					<col style="width: 15%;">
+					<col style="width: 40%;">
+					<col style="width: 15%;">
+					<col style="width: 15%;">
+					<col style="width: 15%;">
+				</colgroup>
+				<thead class="table-light">
+					<th>Station</th>
+					<th>Program</th>
+					<th class="text-center">Start Time</th>
+					<th class="text-center">End Time</th>
+					<th class="text-center">Show</th>
+				</thead>
+			</table>
+		</div>
+		{% for day, programs in program_by_day.items() %}
+			{% if programs %}
+				<h3>{{ day }}</h3>
+				<div class="table-responsive my-3">
+					<table class="table table-hover">
+						<colgroup>
+							<col style="width: 15%;">
+							<col style="width: 40%;">
+							<col style="width: 15%;">
+							<col style="width: 15%;">
+							<col style="width: 15%;">
+						</colgroup>
+						<tbody>
+							{% for program in programs %}
+								<tr>
+									<td>{{ program[1] }}</td>
+									<td>{{ program[2] }}</td>
+									<td class="text-center">{{ program[3] }}</td>
+									<td class="text-center">{{ program[4] }}</td>
+									<td class="text-center">
+										<a class="btn btn-primary btn-sm" href="{{url_for('program_show', id=program[0])}}">Show</a>
+									</td>
+								</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
+			{% endif %}
+		{% endfor %}
+	</div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+<div class="container">
+	<div class="row">
+		<div class="col-10 mx-auto">
+			{% with messages = get_flashed_messages() %}
+				{% if messages %}
+				<div id="announce" class="alert alert-danger alert-dismissible fade show mt-1">
+						<ul>
+								{% for message in messages %}
+										<li>{{ message }}</li>
+								{% endfor %}
+								</ul>
+				</div>
+				<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+				{% endif %}
+			{% endwith %}
+			</div>
+		</div>
+	</div>
+</div>
+<div class="container">
+	<div class="row mt-4">
+		<h1>Public Users</h1>
+		<div class="col-3 my-3">
+			<p><strong>{{ counts }} Users</strong></p>
+		</div>
+		<div class="col-5 ms-auto my-3">
+			<form class="d-flex" method="POST">
+        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="username">
+        <button class="btn btn-outline-success" type="submit">Search</button>
+      </form>
+		</div>
+	</div>
+	<div class="row row-cols-1 row-cols-md-3 g-3 mb-5">
+    {% for user in user_list %}
+		<div class="col">
+			<div class="card h-100 shadow">
+				{% if user.pict != None %}
+					<img src="{{url_for('static', filename='pict/'+user.pict)}}" alt="User" loading="lazy">
+				{% else %}
+					<img src="{{url_for('static', filename='pict/no_image.jpg')}}" alt="User" loading="lazy">
+				{% endif %}
+				<div class="card-body">
+					<h5 class="card-title">{{ user.username }}</h5>
+					<p class="card-text">{% if user.introduction != None %}{{user.introduction}}{% endif %}</p>
+					<a href="{{url_for('user_show', id=user.id)}}" class="btn btn-primary">Show</a>
+				</div>
+			</div>
+		</div>
+		{% endfor %}
+	</div>
+</div>
+
+{% endblock %}

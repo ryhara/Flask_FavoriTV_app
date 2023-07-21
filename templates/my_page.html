@@ -1,0 +1,71 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+<div class="container">
+
+	{% with messages = get_flashed_messages() %}
+	    {% if messages %}
+	    <div id="announce" class="alert alert-info alert-dismissible fade show mt-1" role="alert">
+	        <ul>
+	        {% for message in messages %}
+	            <li>{{ message }}</li>
+	        {% endfor %}
+	        </ul>
+			<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+	    </div>
+	    {% endif %}
+	{% endwith %}
+	<div class="row mt-1">
+		<div class="col-3 mt-4">
+			{% if my.pict != None %}
+					<img src="{{url_for('static', filename='pict/'+my.pict)}}" alt="User" loading="lazy" width="300" height="300">
+				{% else %}
+					<img src="{{url_for('static', filename='pict/no_image.jpg')}}" alt="User" loading="lazy" width="300" height="300">
+			{% endif %}
+		</div>
+		<div class="col-7 offset-md-2 mt-4">
+			<h1>My Information</h1>
+			<div class="table-responsive">
+				<table class="table mt-3">
+					<thead class="table-light">
+						<tr>
+							<th>Username</th>
+							<td>{{my.username}}</td>
+						</tr>
+						<tr>
+							<th>Email</th>
+							<td>{{my.email}}</td>
+						</tr>
+						<tr>
+							<th>Introduction</th>
+							<td>
+								{% if my.introduction == None %}
+									&nbsp;
+								{% else %}
+									{{my.introduction}}
+								{% endif %}
+							</td>
+						</tr>
+						<tr>
+							<th>Access setting</th>
+							<td>
+								{% if my.is_public == 1 %}
+									Public
+								{% else %}
+									Private
+								{% endif %}
+							</td>
+						</tr>
+					</thead>
+				</table>
+			</div>
+			<div class="text-center">
+				<a class="btn btn-success mx-auto mt-2 w-75" href="{{url_for('my_page_edit')}}">Edit My Page</a>
+			</div>
+
+		</div>
+	</div>
+</div>
+
+{% endblock %}

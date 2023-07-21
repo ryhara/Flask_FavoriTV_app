@@ -1,0 +1,53 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+<div class="container">
+	<div class="row">
+			<div class="col-6 mx-auto">
+					{% with messages = get_flashed_messages() %}
+							{% if messages %}
+							<div id="announce" class="alert alert-danger alert-dismissible fade show mt-1">
+									<ul>
+											{% for message in messages %}
+													<li>{{ message }}</li>
+											{% endfor %}
+									</ul>
+									<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+							</div>
+							{% endif %}
+					{% endwith %}
+	</div>
+
+	<div class="row">
+		<form class="row g-3"method="POST">
+			<div class="d-flex justify-content-center">
+				<div class="col-6">
+					<h2>{{ program.name }}</h2>
+				</div>
+			</div>
+			<div class="d-flex justify-content-center">
+				<div class="col-6">
+						<label for="program_name" class="form-label">Performer Name</label>
+						<input type="text" class="form-control" id="performer_name" name="performer_name" placeholder="Performer Name", autofocus>
+				</div>
+			</div>
+
+			<div class="d-flex justify-content-center">
+				<div class="col-6">
+						<label for="program_name" class="form-label">Role</label>
+						<input type="text" class="form-control" id="role" name="role" placeholder="Role">
+				</div>
+			</div>
+
+			<div class="row d-flex justify-content-center">
+				<div class="col-6 my-2">
+					<button type="submit" class="btn btn-success me-2">Register</button>
+					<a href="{{url_for('perform_edit', id=program.id)}}" class="btn btn-secondary">Back</a>
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
+
+{% endblock %}

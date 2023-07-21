@@ -1,0 +1,102 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+<div class="container">
+	<div class="row">
+		<div class="col-10 mx-auto">
+			{% with messages = get_flashed_messages() %}
+				{% if messages %}
+				<div id="announce" class="alert alert-danger alert-dismissible fade show mt-1">
+						<ul>
+								{% for message in messages %}
+										<li>{{ message }}</li>
+								{% endfor %}
+								</ul>
+				</div>
+				<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+				{% endif %}
+			{% endwith %}
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="container">
+	<div class="row mt-2">
+		<div class="col-8 mt-4">
+			<h2>{{ program.name }}</h2>
+		</div>
+		<div class="col-3 ms-auto my-1">
+			<a href="{{url_for('program_show', id=program.id)}}" class="btn btn-secondary btn-sm mt-3">Back to Program Show</a>
+		</div>
+	</div>
+	<div class="row my-2">
+		<div class="col-6">
+			<h4>出演者編集</h4>
+			<div class="table-responsive my-3">
+				<table class="table table-hover">
+					<colgroup>
+						<col style="width: 20%;">
+						<col style="width: 20%;">
+						<col style="width: 10%;">
+					</colgroup>
+					<thead>
+						<th>名前</th>
+						<th>役割</th>
+						<th>削除</th>
+					</thead>
+					<tbody>
+						{% for perform in perform_info %}
+							<tr>
+								<td>{{ perform.celebrity }}</td>
+								<td>{% if perform.role != None %}{{ perform.role }}{% endif %}</td>
+								<td>
+									<form method="POST">
+										<button type="submit" class="btn btn-danger btn-sm" name="delete" value="{{ perform.celebrity_id }}" onclick="confirmDelete('{{ perform.celebrity }}')">Delete</button>
+									</form>
+								</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div class="col-6">
+			<form class="d-flex my-1" method="POST">
+				<input class="form-control me-2" type="search" placeholder="Search Performer" aria-label="Search" name="celebrity_name">
+        <button class="btn btn-outline-success" type="submit" name="search">Search</button>
+      </form>
+
+			<table class="table table-hover">
+				<colgroup>
+					<col style="width: 25%;">
+					<col style="width: 25%;">
+				</colgroup>
+				<thead>
+					<th>Name</th>
+					<th>Add</th>
+				</thead>
+				<tbody>
+					{% for celebrity in celebrity_list %}
+						<tr>
+							<td>{{ celebrity.name }}</td>
+							<td>
+								<form method="POST">
+									<button type="submit" class="btn btn-primary" name="register" value="{{ celebrity.id }}">Add</button>
+								</form>
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+		<div class="row">
+			<div class="col-6">
+				<a href="{{url_for('perform_new', id=program.id)}}" class="btn btn-success mt-3 mb-5">New</a>
+			</div>
+		</div>
+	</div>
+</div>
+
+{% endblock %}

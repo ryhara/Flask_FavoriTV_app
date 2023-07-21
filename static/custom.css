@@ -1,0 +1,11 @@
+.table-responsive {
+	display: block;
+	width: 100%;
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+}
+
+.table td {
+	white-space: normal !important;
+	word-wrap: break-word;
+}

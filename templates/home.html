@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+<div class="container">
+	<div class="row">
+
+		{% with messages = get_flashed_messages() %}
+		    {% if messages %}
+		    <div id="announce" class="alert alert-info alert-dismissible fade show mt-1" role="alert">
+		        <ul>
+		        {% for message in messages %}
+		            <li>{{ message }}</li>
+		        {% endfor %}
+		        </ul>
+						<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+		    </div>
+		    {% endif %}
+		{% endwith %}
+		<div class="mx-auto mt-5">
+				<h1 class="text-center">Welcome to FavoriTV !!</h1>
+				<p class="text-center">お気に入りのTV番組の登録・管理アプリ</p>
+				<div class="button-row col-6 mx-auto">
+					<div class="row">
+							<a class="btn btn-primary mt-5 mb-3 mx-auto" href="{{url_for('login')}}">Login</a>
+					</div>
+					<div class="row">
+						<a class="btn btn-success mb-3 mx-auto" href="{{url_for('signup')}}">Sign Up</a>
+					</div>
+					<div class="row">
+						<a class="btn btn-secondary mb-3 mx-auto" href="{{url_for('report')}}">Report</a>
+					</div>
+				</div>
+		</div>
+
+	</div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,92 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+<div class="container">
+	<div class="row">
+			<div class="col-6 mx-auto">
+					{% with messages = get_flashed_messages() %}
+							{% if messages %}
+							<div id="announce" class="alert alert-danger alert-dismissible fade show mt-1">
+									<ul>
+											{% for message in messages %}
+													<li>{{ message }}</li>
+											{% endfor %}
+									</ul>
+									<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+							</div>
+							{% endif %}
+					{% endwith %}
+	</div>
+
+	<div class="row">
+		<form class="row g-3"method="POST">
+			<div class="d-flex justify-content-center">
+				<div class="col-6">
+						<label for="program_name" class="form-label">Program Name</label>
+						<h3>{{ program.name }}</h3>
+						<!-- <input type="text" class="form-control" id="program_name" value="{{ program.name }}" name="program_name" placeholder="Program Name" value="", autofocus> -->
+				</div>
+			</div>
+
+			<div class="d-flex justify-content-center">
+				<div class="col-6">
+					<label for="inputState" class="form-label">Station</label>
+					<!-- <select id="inputState" class="form-select" name="station_id">
+						<option selected>選択してください</option>
+						{% for station in station_list %}
+							<option value="{{ station.id }}">{{ station.name }}</option>
+						{% endfor %}
+					</select> -->
+						{% for station in station_list %}
+							{% if station.id == program.station_id %}
+								<h4>{{ station.name }}</h4>
+							{% endif %}
+						{% endfor %}
+				</div>
+			</div>
+
+			<div class="row d-flex justify-content-center">
+				<div class="col-md-3 mt-1">
+					<label for="timePicker" class="form-label">Start</label>
+					<input type="time" class="form-control" id="timePicker" value="{{ program.start }}" name="start_time" min="00:00" max="23:59">
+				</div>
+
+				<div class="col-md-3 mt-1">
+					<label for="timePicker" class="form-label">End</label>
+					<input type="time" class="form-control" id="timePicker" value="{{ program.end }}" name="end_time" min="00:00" max="23:59">
+				</div>
+			</div>
+
+			<div class="d-flex justify-content-center">
+				<div class="col-6 ">
+					<div class="input-group">
+						<select class="form-select" id="inputGroupSelect02" name="day">
+							<option selected>選択してください</option>
+							{% for day in day_list %}
+								<option value="{{ day }}">{{ day }}</option>
+							{% endfor %}
+						</select>
+						<label class="input-group-text" for="inputGroupSelect02">曜日</label>
+					</div>
+				</div>
+			</div>
+
+			<div class="d-flex justify-content-center">
+				<di class="col-6 mb-4">
+						<label for="description" class="form-label">Description</label>
+						<textarea class="form-control" name="description" id="description" aria-label="With textarea">{% if program.description != None %}{{ program.description }}{% endif %}</textarea>
+				</div>
+			</div>
+
+			<div class="d-flex justify-content-center">
+				<div class="col-6 mb-2">
+					<button type="submit" class="btn btn-success">Update</button>
+					<a href="{{url_for('program_show', id=program.id)}}" class="btn btn-secondary">Back</a>
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
+
+{% endblock %}

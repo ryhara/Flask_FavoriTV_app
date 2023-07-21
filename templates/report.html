@@ -1,0 +1,358 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+<div class="container">
+	<div class="row my-3">
+		<h1 class="title">
+			レポート
+		</h1>
+	</div>
+		<h4 class="title">・データベースの対象名</h4>
+		<div class="content border-top border-3 my-2">
+			<div>
+				<br><p><strong>テレビ番組</strong> (放送局・番組・出演者・ユーザー・お気に入り)</p>
+			</div>
+		</div>
+
+		<h4 class="title">・第3課題からの変更点</h4>
+		<div class="content border-top border-3 my-2">
+				<p>第3課題のスキーマやビューに加えた変更は以下の点である</p>
+				<ol>
+					<li>userのtableにuserの登録写真の名前を保持するカラムpictの追加</li>
+					<li>favorite_program, perform_info,二つのVIEWにはidに関する情報は持たせてなかったが、検索の都合上, user_id, program_idの情報を追加</li>
+				</ol>
+				<p>以下に変更後のスキーマ、ビューを示す</p>
+				<ul>
+					<li>CREATE TABLE stations (id int, name text, address text);</li>
+					<li>CREATE TABLE program (id INTEGER primary key AUTOINCREMENT, name text UNIQUE, station_id int , start text, end text, day text, description text);</li>
+					<li>CREATE TABLE celebrity (id INTEGER primary key AUTOINCREMENT, name text, company text);</li>
+					<li>CREATE TABLE perform (program_id int, celebrity_id int, role text, primary key(program_id, celebrity_id));</li>
+					<li>CREATE TABLE user (id INTEGER primary key AUTOINCREMENT, username text, email text, introduction text, password text, is_public int default 1, pict text, UNIQUE(username, email));</li>
+					<li>CREATE TABLE favorite (user_id int, program_id int, is_favorite int, primary key(user_id, program_id));</li>
+
+					<li>CREATE VIEW favorite_program as select u.id as user_id, u.username as user_name, p.id as program_id, p.name as program_name , p.station_id as channnel, s.name as station, p.start, p.end, p.day from user u, program p, stations s, favorite f where (f.user_id = u.id and f.program_id = p.id and f.is_favorite=1) and p.station_id = s.id;</li>
+					<li>CREATE VIEW perform_info as select p.id as program_id, p.name as program, c.id as celebrity_id, c.name as celebrity, f.role as role from program p, celebrity c, perform f where f.program_id = p.id and f.celebrity_id = c.id ;</li>
+				</ul>
+		</div>
+
+		<h4 class="title">・Webアプリの概要</h4>
+		<div class="content border-top border-3 my-2">
+			<br>
+			<p>お気に入りのTV番組の登録アプリ。ユーザー機能を持ち、登録、ログインが可能である。ユーザーの名前、メール、自己紹介文、画像、公開設定、パスワードの編集が可能</p>
+			<p>Publicなユーザーの検索、お気に入り番組の閲覧も可能である。 自身で番組情報を登録する。出演者の追加削除も可能。</p>
+			<p>既に作成されている番組を検索してお気に入り登録出来る。</p>
+			<p>お気に入りのFavoriteとTVを合わせてFavoriTVというWebアプリ名にした。</p>
+		</div>
+
+		<h4 class="title">・Webアプリのエンドポイント、使用したSQL文、及び実装上の工夫</h4>
+		<div class="content border-top border-3 mb-2 ">
+			<p>
+				<br> Webアプリの各エンドポイントに対し、その画面が何をするものなのか説明し、関連するSQLクエリを記述する。<br>
+				必要に応じて、MVTモデルに則った、Webアプリ、データベース、テンプレートの各画面での役割について説明する。<br>
+				また、Webアプリやデータベース接続のセキュリティ向上のための工夫、フォームバリデーションやユーザインターフェイスに関する工夫があれば併せて報告する。
+			</p>
+
+			<h5>layout</h5>
+			<div class="mb-1">
+				<br>
+				<p>
+					デザインにはBootstrap 5.0.2を使用。アイコンはFont Awesome 5.15.4を使用<br>
+					Bootstrapを用いて1からデザインを考えた点はアピールポイントである。
+					また不足している、フラッシュメッセージの自動削除やconfirmダイアログを表示する機能などは独自のcustom.css, custom.jsファイルを用いて追加している。<br>
+					ログイン後とログイン前でメニューバーの表示を変えている。
+				</p>
+			</div>
+
+			<h5>home (/)</h5>
+			<div class="mb-1">
+				<br>
+				<p>
+					ホーム画面。タイトルと、login, signup, reportへの遷移ボタンを表示<br>
+					下記はログイン後のホーム画面。メニューバーが変化する。ログイン後はメニューバーのHomeアイコンを消す選択肢もあったがReportにたどり着きやすいように表示している。<br>
+					メニューバー左側のタイトル部分もHomeへのリンクとなっている。
+				</p>
+				<div class="d-flex justify-content-center">
+					<img src="{{url_for('static', filename='report/home.png')}}" alt="home" loading="lazy" width="600" height="300">
+				</div>
+			</div>
+
+			<div>
+				<h5>signup (/signup)</h5>
+				<p>
+					<br>ユーザーの登録画面。名前、メール、パスワード、公開設定を登録できる。<br>
+					空の項目がある場合、パスワードが一致しない場合と、同じ名前、メールが存在する場合は登録できず、エラーのフラッシュメッセージが表示される
+				</p>
+				<ul>
+					<li>名前の一致確認　cur.execute('SELECT * FROM user WHERE username = ?',(username,))</li>
+					<li>メールの一致確認　cur.execute('SELECT * FROM user WHERE email = ?',(email,))</li>
+					<li>登録　cur.execute('INSERT INTO user (username, email, password, is_public) VALUES (?, ?, ?, ?)', (username, email, h.hexdigest(), int(is_public)))</li>
+				</ul>
+				<div class="d-flex justify-content-center">
+					<img src="{{url_for('static', filename='report/signup.png')}}" alt="signup" loading="lazy" width="600" height="300">
+				</div>
+			</div>
+
+			<div>
+				<h5>login (/login)</h5>
+				<br>
+				<p>
+					ユーザーのログイン画面。名前、パスワードが空の場合、登録されている情報と異なる場合、エラーのフラッシュメッセージが表示される。<br>ログイン中にsignup画面、login画面に遷移すると、再ログイン等防止のために、MyPageに遷移するようにしている。<br>
+				</p>
+				<ul>
+					<li>パスワードとユーザー名のチェック　cur.execute('SELECT * FROM user WHERE username = ? AND password = ?', (username, h.hexdigest()))</li>
+					<li>MyPageへの遷移に必要な情報　cur.execute("SELECT username, email, introduction, is_public, pict FROM user WHERE id=?", (session['user_id'],))</li>
+				</ul>
+				<div class="d-flex justify-content-center">
+					<img src="{{url_for('static', filename='report/login.png')}}" alt="login" loading="lazy" width="600" height="300">
+				</div>
+			</div>
+
+			<div>
+				<h5>my_page (/my_page)</h5>
+				<br>
+				<p>
+					ログインユーザーの登録情報一覧画面。ログイン後に遷移する。編集画面へのボタンをもつ。ログイン後であるため右上のメニューバーの表示が変わっている。<br>
+					自己紹介文などを表示しているテーブルは文字列が長くなった時にスライドバーがつくように、cssを書いている。<br>
+					また、ログイン後にフラッシュメッセージが表示される。フラッシュメッセージが自動で消え、配置もずれなくなるようにjsを書いている。<br>
+				</p>
+				<ul>
+					<li>表示する登録情報の取得　cur.execute("SELECT username, email, introduction, is_public, pict FROM user WHERE id=?", (session['user_id'],))</li>
+				</ul>
+				<div class="d-flex justify-content-center">
+					<img src="{{url_for('static', filename='report/mypage.png')}}" alt="mypage" loading="lazy" width="600" height="300">
+				</div>
+			</div>
+
+			<div>
+				<h5>my_page_edit (/my_page/edit)</h5>
+				<br>
+				<p>
+					ログインユーザーの登録情報編集画面。名前、パスワード、自己紹介文、プロフィール画像、パスワード、公開範囲の編集が可能<br>
+					名前とメールは選択必須である。ここでも登録時と同様に同一の名前、メールが無いかチェックしている。<br>
+					自己紹介文、画像、新しいパスワードは空でも更新が出来る。その場合埋まっている項目のみ更新される。<br>セキュリティ上、古いパスワードを入力しないと編集出来ない。<br>
+				</p>
+				<ul>
+					<li>名前、メールの重複チェック、パスワードの一致チェックなどは登録時同様</li>
+					<li>画像アリ、新パスワード無し　cur.execute('UPDATE user SET username=?, email=?, introduction=?, is_public=?, pict=? WHERE id=?', [username, email, introduction, int(is_public), filename, session['user_id']])</li>
+					<li>画像アリ、新パスワードあり　cur.execute('UPDATE user SET username=?, email=?, introduction=?, password=?, is_public=?, pict=? WHERE id=?', [username, email, introduction, h.hexdigest(), int(is_public), filename, session['user_id']])</li>
+					<li>画像無しの場合は、画像の更新の部分が変わる</li>
+				</ul>
+				<div class="d-flex justify-content-center">
+					<img src="{{url_for('static', filename='report/mypage_edit.png')}}" alt="mypage_edit" loading="lazy" width="600" height="300">
+				</div>
+			</div>
+
+			<div>
+				<h5>my_program (/my_program)</h5>
+				<br>
+				<p>
+					ログインユーザーがお気に入りに登録している番組を曜日ごとに一覧表示している。<br>
+					各番組の詳細へのShowボタンを持っている。曜日順、時刻順に並べている。
+				</p>
+				<ul>
+					<li>お気に入り番組を全取得　cur.execute("SELECT program_id, program_name, station, start, end, day FROM favorite_program fp WHERE fp.user_id=? ORDER BY fp.start", (session['user_id'],))</li>
+					<li>以下のコードのようにして、曜日ごとに分類してからhtml側に渡している</li>
+				</ul>
+				<pre><code>
+					program_by_day = {}
+					day_list =  ["月", "火", "水", "木", "金", "土", "日", "平日"]
+					for i in day_list:
+						program_by_day[i] = []
+					for program in my_program:
+						program_id, program_name, station, start, end, day = program
+						program_by_day[day].append((program_id, station, program_name, start, end))
+				</code></pre>
+				<div class="d-flex justify-content-center">
+					<img src="{{url_for('static', filename='report/my_program.png')}}" alt="my_program" loading="lazy" width="600" height="300">
+				</div>
+			</div>
+
+			<div>
+				<h5>program_search (/program_search)</h5>
+				<br>
+				<p>
+					登録されている番組を曜日順、時間順、チャンネル順に並べている。曜日検索、時間検索、名前検索が出来る。<br>
+					検索ボックスに文字を打ち込むとその文字列を含む番組が検索される。空の場合は全番組となる。<br>
+					曜日はデフォルトで全曜日が設定しており、他に選択しない場合は全ての曜日が対象となる。<br>
+					時間検索は開始時間を指定し、指定した時間から1時間の間に始まる番組を対象として検索している。<br>
+					ヒットした合計数も表示している。右上に新しく番組を登録する画面へのボタンを配置している。
+				</p>
+				<ul>
+					<li>曜日無し、時間無し　program_list = cur.execute("SELECT p.id, s.name as station, p.name, p.start, p.end, p.day FROM program p, stations s WHERE p.station_id=s.id and p.name LIKE ? ORDER BY p.start, p.station_id", ('%'+request.form["program_name"]+'%',)).fetchall()</li>
+					<li>曜日有り、時間無し　program_list = cur.execute("SELECT p.id, s.name as station, p.name, p.start, p.end, p.day FROM program p, stations s WHERE p.station_id=s.id and p.day=? and p.name LIKE ? ORDER BY p.start, p.station_id", (request.form['day'], '%'+request.form["program_name"]+'%')).fetchall()</li>
+					<li>曜日無し、時間有り　program_list = cur.execute("SELECT p.id, s.name as station, p.name, p.start, p.end, p.day FROM program p, stations s WHERE p.station_id=s.id and p.start >= ? and p.start < ? and  p.name LIKE ? ORDER BY p.start, p.station_id", (request.form["selectedTime"], start_time_range, '%'+request.form["program_name"]+'%')).fetchall()</li>
+					<li>曜日有り、時間有り　program_list = cur.execute("SELECT p.id, s.name as station, p.name, p.start, p.end, p.day FROM program p, stations s WHERE p.station_id=s.id and p.day=? and p.start >= ? and p.start < ? and p.name LIKE ? ORDER BY p.start, p.station_id", (request.form['day'], request.form["selectedTime"], start_time_range, '%'+request.form["program_name"]+'%')).fetchall()</li>
+				</ul>
+				<div class="d-flex justify-content-center">
+					<img src="{{url_for('static', filename='report/program_search.png')}}" alt="program_search" loading="lazy" width="600" height="300">
+				</div>
+			</div>
+
+			<div>
+				<h5>program_new (/program/new)</h5>
+				<br>
+				<p>
+					新規番組登録画面。番組名、放送局、開始時間、終了時間、放送曜日を指定しないと登録出来ないようにバリデーションが設定されており、フラッシュメッセージも表示される。<br>
+					同じ番組名は登録できないようにしている。
+				</p>
+				<ul>
+					<li>番組登録　cur.execute("INSERT INTO program (name, station_id, start, end, day, description) VALUES (?, ?, ?, ?, ?, ?)", (program_name, station_id, start_time, end_time, day, description))</li>
+					<li>番組名のチェック、登録成功後の遷移に必要な情報のためのSQL文は他のSQL文と変わらないため省略</li>
+				</ul>
+				<div class="d-flex justify-content-center">
+					<img src="{{url_for('static', filename='report/program_new.png')}}" alt="program_new" loading="lazy" width="600" height="300">
+				</div>
+			</div>
+
+			<div>
+				<h5>program_show (/program/&lt;id&gt;)</h5>
+				<br>
+				<p>
+					各番組の詳細画面、番組名、放送曜日、時間、番組説明、出演者などの情報を表示。<br>
+					自身のお気に入り一覧へ戻るボタンを持つ。また右上のFavoriteが♥マークかつ赤色の場合、お気に入りに登録されている。<br>
+					外枠が水色かつ白色のボタンでFavorite Registerと表示されているときはお気に入りに登録されていない。<br>
+					ボタンを押すことでお気に入りの登録または削除が出来る。YouTubeのチャンネル登録やTwitterのフォローなどをイメージした。<br>
+					デフォルトの表示でお気に入りでないを選択しているが、お気に入り出ない場合はデータベースに書き込まれることはなく、お気に入りの場合のみ保存される。<br>
+					出演者を編集する画面へと遷移出来る。放送時間よこの歯車マークより番組情報編集が可能である。
+				</p>
+				<ul>
+					<li>お気に入りかどうかの取得　cur.execute("SELECT * FROM favorite f WHERE f.user_id=? and f.program_id=?", (session['user_id'], id))</li>
+					<li>お気に入りの削除　cur.execute("DELETE FROM favorite WHERE user_id=? and program_id=?", (session['user_id'], id))</li>
+					<li>お気に入りの登録　cur.execute('INSERT INTO favorite (user_id, program_id, is_favorite) VALUES (?, ?, ?)', (session['user_id'], id, 1))</li>
+					<li>番組詳細情報の取得　cur.execute("SELECT * FROM program p WHERE p.id = ?", (id,))</li>
+					<li>出演者情報の取得　cur.execute("SELECT * FROM perform_info pi WHERE pi.program_id = ?", (id,))</li>
+				</ul>
+				<div class="d-flex justify-content-center">
+					<img src="{{url_for('static', filename='report/program_show_favorite.png')}}" alt="program_show_favorite" loading="lazy" width="600" height="300">
+				</div>
+				<div class="d-flex justify-content-center">
+					<img src="{{url_for('static', filename='report/program_show_not.png')}}" alt="program_show_not" loading="lazy" width="600" height="300">
+				</div>
+			</div>
+
+			<div>
+				<h5>program_edit (/program/&lt;id&gt;/edit)</h5>
+				<br>
+				<p>
+					番組情報の更新が可能。名前、局が変わることは基本的にないので、放送時間と曜日、説明文のみ編集できるようにしている。<br>
+					放送時間と説明文はあらかじめの値を表示させており、時間と曜日にはバリデーションを設定している。
+				</p>
+				<ul>
+					<li>番組情報の更新　cur.execute("UPDATE program SET start=?, end=?, day=?, description=?", (start_time, end_time, day, description))</li>
+					<li>情報の取得などその他のSQL文は他と同様</li>
+				</ul>
+				<div class="d-flex justify-content-center">
+					<img src="{{url_for('static', filename='report/program_edit.png')}}" alt="program_edit" loading="lazy" width="600" height="300">
+				</div>
+			</div>
+
+			<div>
+				<h5>perform_edit (/program/&lt;id&gt;/perform/edit)</h5>
+				<br>
+				<p>
+					出演者情報の編集が可能。削除ボタンを押せば登録が消される。右側の検索ボックスで芸能人を検索し追加できる。<br>
+					既に追加されている人も表示されてしまうが、Addを押しても追加されないようになっている。<br>
+					左下のNewボタンから役割も含めて追加出来るページに遷移する。
+				</p>
+				<ul>
+					<li>芸能人の名前検索　 cur.execute("SELECT * FROM celebrity WHERE name LIKE ? ORDER BY id", ('%'+request.form["celebrity_name"]+'%',)).fetchall()</li>
+					<li>登録済みかの確認　cur.execute("SELECT * FROM perform WHERE program_id=? and celebrity_id=?", (id, request.form['register'])).fetchone():</li>
+					<li>出演者に登録　cur.execute("INSERT INTO perform (program_id, celebrity_id) VALUES (?, ?)", (id, request.form['register']))</li>
+					<li>出演者から削除　cur.execute("DELETE FROM perform WHERE program_id=? and celebrity_id=?", (id, request.form['delete']))</li>
+				</ul>
+				<div class="d-flex justify-content-center">
+					<img src="{{url_for('static', filename='report/perform_edit.png')}}" alt="perform_edit" loading="lazy" width="600" height="300">
+				</div>
+			</div>
+
+			<div>
+				<h5>perform_new (/program/&lt;id&gt;/perform/new)</h5>
+				<br>
+				<p>
+					出演者情報の登録が可能。既に出演者に登録している場合登録できない。また芸能人の名前が空の状態では登録出来ない。<br>
+					名前の欄に入力した芸能人が芸能人tableに存在する場合は、元から登録されているIDを使用し、登録されていない場合は登録してから出演者に登録する。<br>
+					何の番組か分かりやすいように表示している点と、戻るボタンも作成している。
+				</p>
+				<ul>
+					<li>同じ芸能人がいるか確認　cur.execute("SELECT * FROM celebrity WHERE name=?", (performer_name, )).fetchone():</li>
+					<li>芸能人の登録　cur.execute("INSERT INTO celebrity (name) VALUES (?)", (performer_name,))</li>
+					<li>既に出演者に登録されているか確認　cur.execute("SELECT * FROM perform WHERE program_id=? and celebrity_id=?", (id, celebrity[0])).fetchone():</li>
+					<li>出演者として登録　cur.execute("INSERT INTO perform (program_id, celebrity_id, role) VALUES (?, ?, ?)", (id, celebrity[0], role))</li>
+				</ul>
+				<div class="d-flex justify-content-center">
+					<img src="{{url_for('static', filename='report/perform_new.png')}}" alt="perform_new" loading="lazy" width="600" height="300">
+				</div>
+			</div>
+
+			<div>
+				<h5>user_index (/users)</h5>
+				<br>
+				<p>
+					Publicなユーザーの一覧表示、検索画面。ユーザー名、画像、自己紹介、個人のお気に入り番組一覧を表示する画面への遷移ボタンを持つ。<br>
+					検索バーを持ち、全体の検索数も表示している。名前で検索をし、その文字列を含むユーザーを表示する。Publicなユーザーしか表示されない。<br>
+					写真を登録していないユーザーは代替の画像を表示させている。
+				</p>
+				<ul>
+					<li>パブリックユーザーの取得　user_list = cur.execute("SELECT id, username, introduction, pict FROM user WHERE is_public=1 and id <> ? ORDER BY id", (session['user_id'],)).fetchall()</li>
+					<li>ユーザー名検索　user_list = cur.execute("SELECT u.id, u.username, u.introduction, u.pict FROM user u WHERE u.is_public=1 and u.id <> ? and u.username LIKE ? ORDER BY u.id", (session['user_id'], '%'+request.form["username"]+'%')).fetchall()</li>
+				</ul>
+				<div class="d-flex justify-content-center">
+					<img src="{{url_for('static', filename='report/user_index.png')}}" alt="user_index" loading="lazy" width="600" height="300">
+				</div>
+			</div>
+
+			<div>
+				<h5>user_show (/users/&lt;id&gt;)</h5>
+				<br>
+				<p>
+					Publicなユーザーのお気に入り番組、登録情報を一覧表示している。my_programと構成や機能は類似している。
+				</p>
+				<ul>
+					<li>ユーザー情報取得　cur.execute("SELECT * FROM user WHERE id = ? and is_public=1", (id,))</li>
+					<li>ユーザーのお気に入り番組の取得　cur.execute("SELECT program_id, program_name, station, start, end, day FROM favorite_program fp WHERE fp.user_id=?", (id,))</li>
+				</ul>
+				<div class="d-flex justify-content-center">
+					<img src="{{url_for('static', filename='report/user_show.png')}}" alt="user_show" loading="lazy" width="600" height="300">
+				</div>
+			</div>
+
+
+		</div>
+
+		<h4 class="title">・考察、感想</h4>
+		<div class="content border-top border-3 mb-3">
+			<br>
+			<p>
+				　画面設計を最初にざっくりとしか考えずに進めてしまったため、画面数が多くなってしまった。<br>
+				また、大量の番組情報を登録することが一番大変であるため、ユーザーの一人一人が自身で登録をする形のコミュニティスタイルのアプリとした。<br>
+				時間に余裕があれば管理者画面も作成して、重要な削除や編集は管理者のみが行えるようなアプリにすれば良かったが、先にユーザーが全てやる前提で始めたためこのスタイルとなった。<br>
+				自身の技術的に実現できなかったことは、番組を作成する画面で同時に出演者も追加することである。
+				使いにくく、長いコードになるなることを許容すれば実現できそうではあったが、使いやすさや見やすさを考慮して断念した。出演者は別の番組詳細から追加できる仕様とした。<br>
+				また、出演者やユーザー、番組などは同じ名前は登録できないようにしているが、それでもタイポなどで似たような番組が作成できてしまう。統括的な管理をするのであれば、管理者機能を付けるべきであった。<br>
+				管理者画面に関しては改善点が残るが第2課題の時から想定していたものはある程度思い通りに作成できた。<br>
+			</p>
+			<br>
+			<p>
+				　本授業を通して、ER図、データベースの設計、SQLの操作、Webアプリケーションの作り方の基礎を学ぶことが出来た。<br>
+				最終課題はWebアプリケーションを作成したことのない人にとっては難易度が高いと感じたが、サンプルアプリが配布されたことでとても取り組みやすかった。<br>
+				私はBootstrapを使用し、オリジナルでデザインを考えた。またバリデーションや名前の重複チェックなどエラーハンドリングも丁寧に行った。
+				また、ユーザー機能や検索機能も複数条件などに対応したり、VIEWやSQLの検索文を工夫して上手く実装できたと思う。他にも登録、編集、削除などあらゆる種類のSQL文を用いた。<br>
+				この課題を通して得た、データベース、Webアプリの知識や経験を今後の学習や仕事などに活かしていきたい。
+			</p>
+		</div>
+		<h4 class="title">・参考資料</h4>
+		<div class="content border-top border-3 mb-3">
+			<br>
+			<ol>
+				<li>Bootstrap <a href="https://getbootstrap.jp/">https://getbootstrap.jp/</a></li>
+				<li>Font awesome <a href="https://fontawesome.com/">https://fontawesome.com/</a></li>
+				<li>サンプルアプリ <a href="https://github.com/FujikiLab/dm_app">https://github.com/FujikiLab/dm_app</a></li>
+				<li>いらすとや <a href="https://www.irasutoya.com/">https://www.irasutoya.com/</a></li>
+				<li>TVer <a href="https://tver.jp/">https://tver.jp/</a></li>
+				<li>番組表 Gガイド <a href="https://bangumi.org/">https://bangumi.org/</a></li>
+			</ol>
+		</div>
+</div>
+
+{% endblock %}
