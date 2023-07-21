@@ -34,6 +34,12 @@ flask run
 ```
 https://msiz07-flask-docs-ja.readthedocs.io/ja/latest/installation.html
 
+
+### Initialize database
+```
+sqlite3 database.db < sql/insert.sql
+```
+
 ## References
 - [https://github.com/FujikiLab/dm_app](https://github.com/FujikiLab/dm_app)
 - [https://msiz07-flask-docs-ja.readthedocs.io/ja/latest/installation.html](https://msiz07-flask-docs-ja.readthedocs.io/ja/latest/installation.html)
