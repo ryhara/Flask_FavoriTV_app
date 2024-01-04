@@ -42,6 +42,7 @@ mac or linux
 
 ```
 python3 -m venv venv
+. venv/bin/activate
 venv/bin/activate
 pip install Flask
 flask run
